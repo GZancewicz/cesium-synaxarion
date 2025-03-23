@@ -8,24 +8,43 @@ import { HistoricalFigure, Connection } from './types';
 const sampleFigures: HistoricalFigure[] = [
   {
     id: '1',
-    name: 'Saint John Chrysostom',
+    name: 'Holy Martyr Codratus of Corinth',
     type: 'saint',
-    birthYear: 349,
-    deathYear: 407,
+    deathYear: 251,
     location: {
-      latitude: 41.0082,
-      longitude: 28.9784, // Constantinople (modern-day Istanbul)
+      latitude: 37.9387,
+      longitude: 22.9322, // Corinth, Greece
     },
   },
   {
     id: '2',
-    name: 'Saint Basil the Great',
-    type: 'saint',
-    birthYear: 330,
-    deathYear: 379,
+    name: 'Emperor Decius',
+    type: 'emperor',
+    birthYear: 200,
+    deathYear: 251,
     location: {
-      latitude: 38.7223,
-      longitude: 35.4873, // Caesarea Mazaca (modern-day Kayseri)
+      latitude: 41.9028,
+      longitude: 12.4964, // Rome, Italy
+    },
+  },
+  {
+    id: '3',
+    name: 'Holy Martyr Codratus of Nicomedia',
+    type: 'saint',
+    deathYear: 258, // Estimated during Valerian's reign
+    location: {
+      latitude: 40.7731,
+      longitude: 29.9178, // Nicomedia (modern-day İzmit, Turkey)
+    },
+  },
+  {
+    id: '4',
+    name: 'Venerable Mother Anastasia of Alexandria',
+    type: 'saint',
+    deathYear: 567,
+    location: {
+      latitude: 31.2001,
+      longitude: 29.9187, // Alexandria, Egypt
     },
   }
 ];
@@ -33,9 +52,9 @@ const sampleFigures: HistoricalFigure[] = [
 const sampleConnections: Connection[] = [
   {
     id: '1',
-    fromId: '1',
-    toId: '2',
-    type: 'guided_by',
+    fromId: '1', // Codratus (id: '1')
+    toId: '2',   // Decius (id: '2')
+    type: 'lived_under',
     bidirectional: false,
   }
 ];

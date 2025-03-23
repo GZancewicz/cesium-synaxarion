@@ -109,7 +109,7 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ figures, connections, onFig
         ? (figure.birthYear + figure.deathYear) / 2
         : figure.birthYear || figure.deathYear || 0;
 
-      const height = Math.max(200000, year * 100); // Increased minimum height for better visibility
+      const height = 100000; // Fixed height for better visibility
 
       const entity = entities.add({
         position: Cesium.Cartesian3.fromDegrees(
@@ -119,14 +119,14 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ figures, connections, onFig
         ),
         point: {
           pixelSize: 12,
-          color: Cesium.Color.GOLD,
+          color: figure.type === 'saint' ? Cesium.Color.GOLD : Cesium.Color.GRAY,
           outlineColor: Cesium.Color.WHITE,
           outlineWidth: 2,
           heightReference: Cesium.HeightReference.NONE,
           disableDepthTestDistance: Number.POSITIVE_INFINITY
         },
         label: {
-          text: figure.name,
+          text: figure.type === 'saint' ? `+ ${figure.name}` : figure.name,
           font: '16px sans-serif',
           style: Cesium.LabelStyle.FILL_AND_OUTLINE,
           outlineWidth: 2,
@@ -140,6 +140,55 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ figures, connections, onFig
           disableDepthTestDistance: Number.POSITIVE_INFINITY
         },
       });
+
+      // Add date label
+      const dateText = figure.birthYear && figure.deathYear ? 
+        `${figure.birthYear}-${figure.deathYear}` :
+        figure.birthYear ? 
+          `b.${figure.birthYear}` :
+          figure.deathYear ?
+            `d.${figure.deathYear}` : '';
+
+      if (dateText) {
+        const dateLabel = entities.add({
+          position: Cesium.Cartesian3.fromDegrees(
+            figure.location.longitude,
+            figure.location.latitude,
+            height
+          ),
+          label: {
+            text: dateText,
+            font: '14px sans-serif',
+            style: Cesium.LabelStyle.FILL,
+            verticalOrigin: Cesium.VerticalOrigin.TOP,
+            horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+            pixelOffset: new Cesium.Cartesian2(0, 12),
+            fillColor: Cesium.Color.fromCssColorString('#808080'),
+            showBackground: true,
+            backgroundColor: new Cesium.Color(0, 0, 0, 0),
+            disableDepthTestDistance: Number.POSITIVE_INFINITY
+          }
+        });
+        entitiesRef.current.push(dateLabel);
+      }
+
+      // Add vertical line to ground
+      const verticalLine = entities.add({
+        polyline: {
+          positions: Cesium.Cartesian3.fromDegreesArrayHeights([
+            figure.location.longitude, figure.location.latitude, height,
+            figure.location.longitude, figure.location.latitude, 0
+          ]),
+          width: 2,
+          material: new Cesium.ColorMaterialProperty(
+            Cesium.Color.fromCssColorString('#808080').withAlpha(0.3)
+          ),
+          clampToGround: false,
+          classificationType: Cesium.ClassificationType.BOTH,
+          zIndex: 100
+        }
+      });
+      entitiesRef.current.push(verticalLine);
 
       if (onFigureClick) {
         viewer.screenSpaceEventHandler.setInputAction((movement: any) => {
@@ -160,44 +209,60 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ figures, connections, onFig
 
       if (!fromFigure || !toFigure) return;
 
-      const fromYear = fromFigure.birthYear && fromFigure.deathYear
-        ? (fromFigure.birthYear + fromFigure.deathYear) / 2
-        : fromFigure.birthYear || fromFigure.deathYear || 0;
-
-      const toYear = toFigure.birthYear && toFigure.deathYear
-        ? (toFigure.birthYear + toFigure.deathYear) / 2
-        : toFigure.birthYear || toFigure.deathYear || 0;
-
-      const fromHeight = Math.max(200000, fromYear * 100);
-      const toHeight = Math.max(200000, toYear * 100);
+      const height = 100000; // Use same fixed height as points
 
       const fromPosition = Cesium.Cartesian3.fromDegrees(
         fromFigure.location.longitude,
         fromFigure.location.latitude,
-        fromHeight
+        height
       );
 
       const toPosition = Cesium.Cartesian3.fromDegrees(
         toFigure.location.longitude,
         toFigure.location.latitude,
-        toHeight
+        height
       );
 
-      const entity = entities.add({
+      // Add the connection line
+      const lineEntity = entities.add({
         polyline: {
           positions: [fromPosition, toPosition],
-          width: 3,
-          material: new Cesium.ColorMaterialProperty(
-            connection.type === 'guided_by' ? Cesium.Color.RED.withAlpha(0.8) : Cesium.Color.WHITE.withAlpha(0.8)
-          ),
-          clampToGround: false,
-          depthFailMaterial: new Cesium.ColorMaterialProperty(
-            connection.type === 'guided_by' ? Cesium.Color.RED.withAlpha(0.4) : Cesium.Color.WHITE.withAlpha(0.4)
-          )
-        },
+          width: 4, // Increased width to make arrow more visible
+          material: connection.type === 'lived_under' ?
+            new Cesium.PolylineArrowMaterialProperty(
+              Cesium.Color.fromCssColorString('#808080').withAlpha(0.8)
+            ) :
+            new Cesium.ColorMaterialProperty(
+              connection.type === 'guided_by' ? Cesium.Color.RED.withAlpha(0.8) :
+              Cesium.Color.WHITE.withAlpha(0.8)
+            ),
+          clampToGround: false
+        }
       });
+      entitiesRef.current.push(lineEntity);
 
-      entitiesRef.current.push(entity);
+      // Add label at midpoint if it's a 'lived_under' connection
+      if (connection.type === 'lived_under') {
+        const midLongitude = (fromFigure.location.longitude + toFigure.location.longitude) / 2;
+        const midLatitude = (fromFigure.location.latitude + toFigure.location.latitude) / 2;
+        
+        const labelEntity = entities.add({
+          position: Cesium.Cartesian3.fromDegrees(midLongitude, midLatitude, height),
+          label: {
+            text: 'Lived under',
+            font: '14px sans-serif',
+            style: Cesium.LabelStyle.FILL,
+            verticalOrigin: Cesium.VerticalOrigin.CENTER,
+            horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+            eyeOffset: new Cesium.Cartesian3(0, 0, -10000), // Offset towards viewer
+            fillColor: Cesium.Color.fromCssColorString('#808080'),
+            showBackground: true,
+            backgroundColor: new Cesium.Color(0, 0, 0, 0),
+            disableDepthTestDistance: Number.POSITIVE_INFINITY
+          }
+        });
+        entitiesRef.current.push(labelEntity);
+      }
     });
 
     // Zoom to entities with a better view
