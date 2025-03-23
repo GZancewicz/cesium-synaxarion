@@ -13,7 +13,8 @@
             "location": {
                 "latitude": 37.9387,
                 "longitude": 22.9322
-            }
+            },
+            "info": "Martyred in Corinth during the persecution under Emperor Decius"
         },
         {
             "id": "2",
@@ -32,7 +33,8 @@
             "location": {
                 "latitude": 41.9028,
                 "longitude": 12.4964
-            }
+            },
+            "info": "Roman Emperor from 249 to 251 CE, known for initiating the Decian persecution of Christians"
         },
         {
             "id": "3",
@@ -47,7 +49,8 @@
             "location": {
                 "latitude": 40.7731,
                 "longitude": 29.9178
-            }
+            },
+            "info": "Martyred in Nicomedia during the persecution of Christians under Emperor Valerian"
         },
         {
             "id": "4",
@@ -62,7 +65,8 @@
             "location": {
                 "latitude": 31.2001,
                 "longitude": 29.9187
-            }
+            },
+            "info": "A desert mother who lived in Alexandria, known for her ascetic life and spiritual wisdom"
         },
         {
             "id": "5",
@@ -81,7 +85,8 @@
             "location": {
                 "latitude": 38.7223,
                 "longitude": 35.4873
-            }
+            },
+            "info": "One of the Cappadocian Fathers, Archbishop of Caesarea, and author of influential monastic rules"
         },
         {
             "id": "6",
@@ -100,7 +105,8 @@
             "location": {
                 "latitude": 41.0082,
                 "longitude": 28.9784
-            }
+            },
+            "info": "First Christian Roman Emperor, founder of Constantinople, and convener of the First Ecumenical Council"
         },
         {
             "id": "7",
@@ -115,7 +121,8 @@
             "location": {
                 "latitude": 39.9334,
                 "longitude": 32.8597
-            }
+            },
+            "info": "Priest martyred in Ancyra during the reign of Emperor Julian the Apostate"
         },
         {
             "id": "8",
@@ -134,7 +141,8 @@
             "location": {
                 "latitude": 38.398047,
                 "longitude": 34.349794
-            }
+            },
+            "info": "One of the Cappadocian Fathers, Archbishop of Constantinople, and renowned theologian known as 'The Theologian'"
         },
         {
             "id": "9",
@@ -149,7 +157,8 @@
             "location": {
                 "latitude": 38.954295,
                 "longitude": 33.959229
-            }
+            },
+            "info": "Mother of St. Basil the Great and St. Gregory of Nyssa, known for her piety and holy life"
         },
         {
             "id": "10",
@@ -164,7 +173,8 @@
             "location": {
                 "latitude": 46.38639,
                 "longitude": 5.86611
-            }
+            },
+            "info": "Fourth abbot of Condat Abbey in the Jura Mountains, known for his ascetic life and monastic leadership"
         }
     ],
     "connections": [
