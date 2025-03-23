@@ -66,7 +66,7 @@
         },
         {
             "id": "5",
-            "name": "Saint Basil the Great",
+            "name": "St. Basil the Great",
             "type": "saint",
             "dates": {
                 "birth": {
@@ -85,7 +85,7 @@
         },
         {
             "id": "6",
-            "name": "Saint Constantine the Great",
+            "name": "St. Constantine the Great",
             "type": "saint",
             "dates": {
                 "birth": {

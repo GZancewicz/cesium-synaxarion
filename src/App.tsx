@@ -15,8 +15,12 @@ const typedHistoricalData = historicalData as HistoricalData;
 const DRAWER_WIDTH = 300;
 
 function App() {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedFigure, setSelectedFigure] = useState<HistoricalFigure | null>(null);
+
+  const toggleDrawer = () => {
+    setDrawerOpen(!drawerOpen);
+  };
 
   const handleFigureClick = (figure: HistoricalFigure) => {
     setSelectedFigure(figure);
@@ -46,8 +50,8 @@ function App() {
         position="fixed" 
         sx={{ 
           zIndex: (theme) => theme.zIndex.drawer + 1,
-          width: `calc(100% - ${isDrawerOpen ? DRAWER_WIDTH : 0}px)`,
-          marginLeft: isDrawerOpen ? `${DRAWER_WIDTH}px` : 0,
+          width: `calc(100% - ${drawerOpen ? DRAWER_WIDTH : 0}px)`,
+          marginLeft: drawerOpen ? `${DRAWER_WIDTH}px` : 0,
           transition: (theme) =>
             theme.transitions.create(['width', 'margin'], {
               easing: theme.transitions.easing.sharp,
@@ -60,7 +64,7 @@ function App() {
             color="inherit"
             aria-label="open drawer"
             edge="start"
-            onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+            onClick={toggleDrawer}
             sx={{ mr: 2 }}
           >
             <MenuIcon />
@@ -82,7 +86,7 @@ function App() {
         }}
         variant="persistent"
         anchor="left"
-        open={isDrawerOpen}
+        open={drawerOpen}
       >
         <Toolbar /> {/* Add space for AppBar */}
         <Box sx={{ overflow: 'auto' }}>
@@ -115,8 +119,8 @@ function App() {
         sx={{
           flexGrow: 1,
           p: 0,
-          width: `calc(100% - ${isDrawerOpen ? DRAWER_WIDTH : 0}px)`,
-          marginLeft: isDrawerOpen ? 0 : `-${DRAWER_WIDTH}px`,
+          width: `calc(100% - ${drawerOpen ? DRAWER_WIDTH : 0}px)`,
+          marginLeft: drawerOpen ? 0 : `-${DRAWER_WIDTH}px`,
           transition: (theme) =>
             theme.transitions.create(['width', 'margin'], {
               easing: theme.transitions.easing.sharp,

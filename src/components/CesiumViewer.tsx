@@ -76,6 +76,16 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ figures, connections, onFig
       navigationInstructionsInitiallyVisible: false,
     });
 
+    // Close the base layer picker after a short delay to ensure it's initialized
+    setTimeout(() => {
+      if (viewer.baseLayerPicker) {
+        const pickerElement = viewer.baseLayerPicker.container.getElementsByClassName('cesium-baseLayerPicker-dropDown')[0] as HTMLElement;
+        if (pickerElement) {
+          pickerElement.style.display = 'none';
+        }
+      }
+    }, 100);
+
     // Set up terrain and imagery
     Cesium.createWorldTerrainAsync().then(terrainProvider => {
       viewer.terrainProvider = terrainProvider;
@@ -89,42 +99,28 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ figures, connections, onFig
     );
 
     // Set up scene
-    viewer.scene.globe.enableLighting = true;
-    viewer.scene.globe.baseColor = Cesium.Color.BLACK;
-    viewer.scene.backgroundColor = Cesium.Color.BLACK;
-    viewer.scene.skyBox = new Cesium.SkyBox({
-      sources: {
-        positiveX: '',
-        negativeX: '',
-        positiveY: '',
-        negativeY: '',
-        positiveZ: '',
-        negativeZ: ''
-      }
-    });
+    viewer.scene.globe.enableLighting = false;
+    viewer.scene.globe.baseColor = Cesium.Color.WHITE;
+    viewer.scene.backgroundColor = Cesium.Color.WHITE;
+    viewer.scene.skyBox.show = false;
     viewer.scene.sun = new Cesium.Sun();
     viewer.scene.moon = new Cesium.Moon();
-    
-    // Hide celestial bodies but keep terrain and imagery
     viewer.scene.sun.show = false;
     viewer.scene.moon.show = false;
-    viewer.scene.skyBox.show = false;
     viewer.scene.globe.show = true;
-
-    // Enable depth testing
     viewer.scene.globe.depthTestAgainstTerrain = true;
 
-    viewerRef.current = viewer;
-
-    // Set initial camera position with a more dramatic view
+    // Set initial camera position centered on Corinth
     viewer.camera.setView({
-      destination: Cesium.Cartesian3.fromDegrees(32.0, 39.0, 1000000), // Reduced height
+      destination: Cesium.Cartesian3.fromDegrees(22.9, 37.9, 2000000), // Corinth coordinates
       orientation: {
-        heading: Cesium.Math.toRadians(30),
+        heading: Cesium.Math.toRadians(0),
         pitch: Cesium.Math.toRadians(-45),
         roll: 0
       }
     });
+
+    viewerRef.current = viewer;
 
     return () => {
       viewer.destroy();
