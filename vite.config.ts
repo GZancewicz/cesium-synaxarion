@@ -21,6 +21,7 @@ export default defineConfig({
     },
   },
   define: {
-    CESIUM_BASE_URL: JSON.stringify(''),
+    CESIUM_BASE_URL: JSON.stringify('/cesium'),
   },
+  publicDir: 'public',
 }); 

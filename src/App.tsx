@@ -14,10 +14,20 @@ const sampleFigures: HistoricalFigure[] = [
     deathYear: 407,
     location: {
       latitude: 41.0082,
-      longitude: 28.9784,
+      longitude: 28.9784, // Constantinople (modern-day Istanbul)
     },
   },
-  // Add more sample figures here
+  {
+    id: '2',
+    name: 'Saint Basil the Great',
+    type: 'saint',
+    birthYear: 330,
+    deathYear: 379,
+    location: {
+      latitude: 38.7223,
+      longitude: 35.4873, // Caesarea Mazaca (modern-day Kayseri)
+    },
+  }
 ];
 
 const sampleConnections: Connection[] = [
@@ -27,8 +37,7 @@ const sampleConnections: Connection[] = [
     toId: '2',
     type: 'guided_by',
     bidirectional: false,
-  },
-  // Add more sample connections here
+  }
 ];
 
 const App: React.FC = () => {
@@ -41,8 +50,8 @@ const App: React.FC = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh' }}>
-      <AppBar position="static">
+    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <IconButton
             color="inherit"
@@ -59,41 +68,52 @@ const App: React.FC = () => {
       </AppBar>
 
       <Drawer
+        variant="persistent"
         anchor="left"
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
         sx={{
           width: 300,
           flexShrink: 0,
           '& .MuiDrawer-paper': {
             width: 300,
             boxSizing: 'border-box',
+            height: '100%',
+            top: 64, // AppBar height
           },
         }}
       >
-        <Toolbar /> {/* Spacer for AppBar */}
-        <Box sx={{ overflow: 'auto' }}>
-          <List>
-            {sampleFigures.map((figure) => (
-              <ListItemButton
-                key={figure.id}
-                selected={selectedFigure?.id === figure.id}
-                onClick={() => {
-                  setSelectedFigure(figure);
-                  setDrawerOpen(true);
-                }}
-              >
-                <ListItemText
-                  primary={figure.name}
-                  secondary={`${figure.type} (${figure.birthYear || '?'} - ${figure.deathYear || '?'})`}
-                />
-              </ListItemButton>
-            ))}
-          </List>
-        </Box>
+        <List>
+          {sampleFigures.map((figure) => (
+            <ListItemButton
+              key={figure.id}
+              selected={selectedFigure?.id === figure.id}
+              onClick={() => {
+                setSelectedFigure(figure);
+              }}
+            >
+              <ListItemText
+                primary={figure.name}
+                secondary={`${figure.type} (${figure.birthYear || '?'} - ${figure.deathYear || '?'})`}
+              />
+            </ListItemButton>
+          ))}
+        </List>
       </Drawer>
 
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          height: '100vh',
+          overflow: 'hidden',
+          ml: drawerOpen ? '300px' : 0,
+          transition: (theme) =>
+            theme.transitions.create('margin', {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.leavingScreen,
+            }),
+        }}
+      >
         <Toolbar /> {/* Spacer for AppBar */}
         <CesiumViewer
           figures={sampleFigures}
