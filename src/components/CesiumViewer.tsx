@@ -211,10 +211,19 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ figures, connections, onFig
   return (
     <Box
       sx={{
-        width: '100%',
-        height: 'calc(100vh - 64px)', // Subtract AppBar height
-        position: 'relative',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         bgcolor: 'black',
+        '& .cesium-viewer': {
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+        }
       }}
     >
       <div ref={cesiumContainer} style={{ width: '100%', height: '100%' }} />
