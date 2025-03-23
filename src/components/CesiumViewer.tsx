@@ -1,11 +1,51 @@
 import React, { useEffect, useRef } from 'react';
 import * as Cesium from 'cesium';
 import 'cesium/Build/Cesium/Widgets/widgets.css';
-import { HistoricalFigure, Connection } from '../types';
 import { Box } from '@mui/material';
+import { HistoricalFigure, DateValue, Connection } from '../types/historical-figures';
 
 // Initialize the Cesium ion access token (using default token)
 Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWE1OWUxNy1mMWZiLTQzYjYtYTQ0OS1kMWFjYmFkNjc5YzciLCJpZCI6NTc3MzMsImlhdCI6MTYyMjY0NDE0OH0.XcKpgANiY19MC4bdFUXMVEBToBmqS8kuYpUlxJHYZxY';
+
+const getDateLabel = (dates: HistoricalFigure['dates']): string => {
+  if (!dates.birth && !dates.death) return '';
+
+  const formatDateValue = (date: DateValue, prefix?: string): string => {
+    if (date.range) {
+      const rangeStr = `${date.range.start}-${date.range.end}`;
+      return date.isApproximate ? `ca. ${rangeStr}` : rangeStr;
+    }
+    return date.isApproximate ? `ca. ${date.year}` : `${date.year}`;
+  };
+
+  if (dates.birth && dates.death) {
+    return `${formatDateValue(dates.birth)} - ${formatDateValue(dates.death)}`;
+  }
+  if (dates.birth) {
+    return `b. ${formatDateValue(dates.birth)}`;
+  }
+  if (dates.death) {
+    return `d. ${formatDateValue(dates.death)}`;
+  }
+  return '';
+};
+
+const getYearForPosition = (dates: HistoricalFigure['dates']): number => {
+  const getMidpoint = (date: DateValue): number => {
+    if (date.range) {
+      return Math.floor((date.range.start + date.range.end) / 2);
+    }
+    return date.year;
+  };
+
+  if (dates.death) {
+    return getMidpoint(dates.death);
+  }
+  if (dates.birth) {
+    return getMidpoint(dates.birth);
+  }
+  return 0;
+};
 
 interface CesiumViewerProps {
   figures: HistoricalFigure[];
@@ -78,7 +118,7 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ figures, connections, onFig
 
     // Set initial camera position with a more dramatic view
     viewer.camera.setView({
-      destination: Cesium.Cartesian3.fromDegrees(32.0, 39.0, 3000000), // Centered between Constantinople and Caesarea
+      destination: Cesium.Cartesian3.fromDegrees(32.0, 39.0, 1000000), // Reduced height
       orientation: {
         heading: Cesium.Math.toRadians(30),
         pitch: Cesium.Math.toRadians(-45),
@@ -105,78 +145,76 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ figures, connections, onFig
 
     // Add figures
     figures.forEach(figure => {
-      const year = figure.birthYear && figure.deathYear
-        ? (figure.birthYear + figure.deathYear) / 2
-        : figure.birthYear || figure.deathYear || 0;
+      const position = Cesium.Cartesian3.fromDegrees(
+        figure.location.longitude,
+        figure.location.latitude,
+        figure.type === 'saint' ? 100000 : 50000  // Reduced height
+      );
 
-      const height = 100000; // Fixed height for better visibility
+      const nameLabel = entities.add({
+        position,
+        label: {
+          text: figure.name,
+          font: '16px sans-serif',
+          fillColor: figure.type === 'saint' ? 
+            Cesium.Color.YELLOW : 
+            Cesium.Color.fromCssColorString('#303030'),
+          style: figure.type === 'saint' ? 
+            Cesium.LabelStyle.FILL_AND_OUTLINE : 
+            Cesium.LabelStyle.FILL,
+          outlineWidth: figure.type === 'saint' ? 2 : 0,
+          outlineColor: Cesium.Color.BLACK,
+          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+          horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+          pixelOffset: new Cesium.Cartesian2(0, -10),
+          backgroundColor: figure.type === 'saint' ? 
+            Cesium.Color.BLACK : 
+            undefined,
+          showBackground: figure.type === 'saint',
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          distanceDisplayCondition: undefined,
+          translucencyByDistance: undefined,
+          scaleByDistance: undefined
+        }
+      });
 
-      const entity = entities.add({
-        position: Cesium.Cartesian3.fromDegrees(
-          figure.location.longitude,
-          figure.location.latitude,
-          height
-        ),
+      const dateLabel = entities.add({
+        position,
+        label: {
+          text: getDateLabel(figure.dates),
+          font: '14px sans-serif',
+          fillColor: Cesium.Color.fromCssColorString('#808080'),
+          style: Cesium.LabelStyle.FILL,
+          verticalOrigin: Cesium.VerticalOrigin.TOP,
+          horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
+          pixelOffset: new Cesium.Cartesian2(8, 5),  // Offset to the right of pin and slightly down
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          distanceDisplayCondition: undefined,
+          translucencyByDistance: undefined,
+          scaleByDistance: undefined
+        }
+      });
+
+      // Add point
+      const pointEntity = entities.add({
+        position,
         point: {
           pixelSize: 12,
           color: figure.type === 'saint' ? Cesium.Color.GOLD : Cesium.Color.GRAY,
           outlineColor: Cesium.Color.WHITE,
           outlineWidth: 2,
           heightReference: Cesium.HeightReference.NONE,
-          disableDepthTestDistance: Number.POSITIVE_INFINITY
-        },
-        label: {
-          text: figure.type === 'saint' ? `+ ${figure.name}` : figure.name,
-          font: '16px sans-serif',
-          style: figure.type === 'saint' ? Cesium.LabelStyle.FILL_AND_OUTLINE : Cesium.LabelStyle.FILL,
-          outlineWidth: figure.type === 'saint' ? 2 : 0,
-          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-          pixelOffset: new Cesium.Cartesian2(0, -12),
-          fillColor: figure.type === 'saint' ? Cesium.Color.YELLOW : Cesium.Color.fromCssColorString('#303030'),
-          outlineColor: Cesium.Color.BLACK,
-          showBackground: figure.type === 'saint',
-          backgroundColor: new Cesium.Color(0, 0, 0, 0.7),
-          distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 10000000),
-          disableDepthTestDistance: Number.POSITIVE_INFINITY
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          distanceDisplayCondition: undefined  // Remove distance condition
         },
       });
-
-      // Add date label
-      const dateText = figure.birthYear && figure.deathYear ? 
-        `${figure.birthYear}-${figure.deathYear}` :
-        figure.birthYear ? 
-          `b.${figure.birthYear}` :
-          figure.deathYear ?
-            `d.${figure.deathYear}` : '';
-
-      if (dateText) {
-        const dateLabel = entities.add({
-          position: Cesium.Cartesian3.fromDegrees(
-            figure.location.longitude,
-            figure.location.latitude,
-            height
-          ),
-          label: {
-            text: dateText,
-            font: '14px sans-serif',
-            style: Cesium.LabelStyle.FILL,
-            verticalOrigin: Cesium.VerticalOrigin.TOP,
-            horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
-            pixelOffset: new Cesium.Cartesian2(0, 12),
-            fillColor: Cesium.Color.fromCssColorString('#808080'),
-            showBackground: true,
-            backgroundColor: new Cesium.Color(0, 0, 0, 0),
-            disableDepthTestDistance: Number.POSITIVE_INFINITY
-          }
-        });
-        entitiesRef.current.push(dateLabel);
-      }
+      entitiesRef.current.push(pointEntity);
 
       // Add vertical line to ground
       const verticalLine = entities.add({
         polyline: {
           positions: Cesium.Cartesian3.fromDegreesArrayHeights([
-            figure.location.longitude, figure.location.latitude, height,
+            figure.location.longitude, figure.location.latitude, 100000,  // Match point height
             figure.location.longitude, figure.location.latitude, 0
           ]),
           width: 2,
@@ -193,13 +231,14 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ figures, connections, onFig
       if (onFigureClick) {
         viewer.screenSpaceEventHandler.setInputAction((movement: any) => {
           const pickedObject = viewer.scene.pick(movement.position);
-          if (Cesium.defined(pickedObject) && pickedObject.id === entity) {
+          if (Cesium.defined(pickedObject) && pickedObject.id === pointEntity) {
             onFigureClick(figure);
           }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
       }
 
-      entitiesRef.current.push(entity);
+      entitiesRef.current.push(nameLabel);
+      entitiesRef.current.push(dateLabel);
     });
 
     // Add connections
@@ -269,7 +308,7 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ figures, connections, onFig
     viewer.zoomTo(viewer.entities, new Cesium.HeadingPitchRange(
       Cesium.Math.toRadians(30),
       Cesium.Math.toRadians(-45),
-      2000000
+      1000000  // Reduced range
     ));
   }, [figures, connections, onFigureClick]);
 

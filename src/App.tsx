@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Box, Drawer, AppBar, Toolbar, IconButton, Typography } from '@mui/material';
+import { Box, Drawer, AppBar, Toolbar, IconButton, Typography, List, ListItem, ListItemText } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import CesiumViewer from './components/CesiumViewer';
-import { HistoricalFigure, Connection } from './types';
+import { HistoricalFigure, Connection } from './types/historical-figures';
 import historicalData from './data/historical-figures.json';
 
 interface HistoricalData {
@@ -15,17 +15,46 @@ const typedHistoricalData = historicalData as HistoricalData;
 const DRAWER_WIDTH = 300;
 
 function App() {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(true);
   const [selectedFigure, setSelectedFigure] = useState<HistoricalFigure | null>(null);
 
   const handleFigureClick = (figure: HistoricalFigure) => {
     setSelectedFigure(figure);
-    setIsDrawerOpen(true);
+  };
+
+  const formatDates = (figure: HistoricalFigure): string => {
+    const birth = figure.dates.birth;
+    const death = figure.dates.death;
+    
+    if (birth && death) {
+      const birthText = birth.isApproximate ? `ca. ${birth.year}` : birth.year;
+      const deathText = death.isApproximate ? `ca. ${death.year}` : death.year;
+      return `${birthText} - ${deathText}`;
+    }
+    if (birth) {
+      return `b. ${birth.isApproximate ? 'ca. ' : ''}${birth.year}`;
+    }
+    if (death) {
+      return `d. ${death.isApproximate ? 'ca. ' : ''}${death.year}`;
+    }
+    return '';
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <AppBar position="relative">
+    <Box sx={{ display: 'flex' }}>
+      <AppBar 
+        position="fixed" 
+        sx={{ 
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          width: `calc(100% - ${isDrawerOpen ? DRAWER_WIDTH : 0}px)`,
+          marginLeft: isDrawerOpen ? `${DRAWER_WIDTH}px` : 0,
+          transition: (theme) =>
+            theme.transitions.create(['width', 'margin'], {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.leavingScreen,
+            }),
+        }}
+      >
         <Toolbar>
           <IconButton
             color="inherit"
@@ -42,14 +71,6 @@ function App() {
         </Toolbar>
       </AppBar>
 
-      <Box sx={{ flexGrow: 1, position: 'relative' }}>
-        <CesiumViewer 
-          figures={typedHistoricalData.figures} 
-          connections={typedHistoricalData.connections}
-          onFigureClick={handleFigureClick} 
-        />
-      </Box>
-
       <Drawer
         sx={{
           width: DRAWER_WIDTH,
@@ -59,23 +80,59 @@ function App() {
             boxSizing: 'border-box',
           },
         }}
+        variant="persistent"
         anchor="left"
         open={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
       >
-        {selectedFigure && (
-          <Box sx={{ p: 3 }}>
-            <Typography variant="h6">{selectedFigure.name}</Typography>
-            {selectedFigure.birthYear && (
-              <Typography>Birth: {selectedFigure.birthYear}</Typography>
-            )}
-            {selectedFigure.deathYear && (
-              <Typography>Death: {selectedFigure.deathYear}</Typography>
-            )}
-            <Typography>Type: {selectedFigure.type}</Typography>
-          </Box>
-        )}
+        <Toolbar /> {/* Add space for AppBar */}
+        <Box sx={{ overflow: 'auto' }}>
+          <List>
+            {typedHistoricalData.figures.map((figure) => (
+              <ListItem 
+                key={figure.id}
+                button
+                selected={selectedFigure?.id === figure.id}
+                onClick={() => handleFigureClick(figure)}
+              >
+                <ListItemText
+                  primary={figure.name}
+                  secondary={formatDates(figure)}
+                  sx={{
+                    '& .MuiListItemText-primary': {
+                      color: figure.type === 'saint' ? '#ffd700' : 'inherit',
+                      fontWeight: figure.type === 'saint' ? 'bold' : 'normal'
+                    }
+                  }}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </Box>
       </Drawer>
+
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 0,
+          width: `calc(100% - ${isDrawerOpen ? DRAWER_WIDTH : 0}px)`,
+          marginLeft: isDrawerOpen ? 0 : `-${DRAWER_WIDTH}px`,
+          transition: (theme) =>
+            theme.transitions.create(['width', 'margin'], {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.leavingScreen,
+            }),
+          height: '100vh',
+          position: 'relative'
+        }}
+      >
+        <Toolbar /> {/* Add space for AppBar */}
+        <CesiumViewer 
+          figures={typedHistoricalData.figures} 
+          connections={typedHistoricalData.connections}
+          onFigureClick={handleFigureClick} 
+        />
+      </Box>
     </Box>
   );
 }
