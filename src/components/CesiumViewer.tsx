@@ -68,9 +68,9 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ figures, connections, onFig
       fullscreenButton: false,
       geocoder: false,
       homeButton: false,
-      infoBox: false,
+      infoBox: true,
       sceneModePicker: true,
-      selectionIndicator: false,
+      selectionIndicator: true,
       timeline: false,
       navigationHelpButton: true,
       navigationInstructionsInitiallyVisible: false,
@@ -162,64 +162,72 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ figures, connections, onFig
     entitiesRef.current = [];
 
     // Add figures
-    figures.forEach(figure => {
+    figures.forEach((figure) => {
       const position = Cesium.Cartesian3.fromDegrees(
         figure.location.longitude,
-        figure.location.latitude,
-        figure.type === 'saint' ? 100000 : 50000  // Reduced height
+        figure.location.latitude
       );
 
-      const nameLabel = entities.add({
-        position,
+      // Create the entity
+      const entity = viewer.entities.add({
+        position: Cesium.Cartesian3.fromDegrees(
+          figure.location.longitude,
+          figure.location.latitude,
+          100000 // Set height for point
+        ),
+        point: {
+          pixelSize: 10,
+          color: figure.type === 'saint' ? Cesium.Color.YELLOW : Cesium.Color.WHITE,
+        },
         label: {
           text: figure.name,
-          font: '16px sans-serif',
-          fillColor: figure.type === 'saint' ? 
-            Cesium.Color.YELLOW : 
-            Cesium.Color.fromCssColorString('#303030'),
-          style: figure.type === 'saint' ? 
-            Cesium.LabelStyle.FILL_AND_OUTLINE : 
-            Cesium.LabelStyle.FILL,
+          font: '14px sans-serif',
+          fillColor: figure.type === 'saint' ? Cesium.Color.YELLOW : Cesium.Color.fromCssColorString('#303030'),
+          style: figure.type === 'saint' ? Cesium.LabelStyle.FILL_AND_OUTLINE : Cesium.LabelStyle.FILL,
           outlineWidth: figure.type === 'saint' ? 2 : 0,
           outlineColor: Cesium.Color.BLACK,
           verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-          horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
           pixelOffset: new Cesium.Cartesian2(0, -10),
-          backgroundColor: figure.type === 'saint' ? 
-            Cesium.Color.BLACK : 
-            undefined,
-          showBackground: figure.type === 'saint',
           disableDepthTestDistance: Number.POSITIVE_INFINITY,
-          distanceDisplayCondition: undefined,
-          translucencyByDistance: undefined,
-          scaleByDistance: undefined
-        }
+          showBackground: figure.type === 'saint',
+          backgroundColor: figure.type === 'saint' ? Cesium.Color.BLACK : undefined,
+        },
+        description: `<p>${figure.info}</p>` // Format the info text as HTML
       });
 
-      const dateLabel = entities.add({
-        position,
-        label: {
-          text: getDateLabel(figure.dates),
-          font: '14px sans-serif',
-          fillColor: Cesium.Color.fromCssColorString('#808080'),
-          style: Cesium.LabelStyle.FILL,
-          verticalOrigin: Cesium.VerticalOrigin.TOP,
-          horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
-          pixelOffset: new Cesium.Cartesian2(8, 5),  // Offset to the right of pin and slightly down
-          disableDepthTestDistance: Number.POSITIVE_INFINITY,
-          distanceDisplayCondition: undefined,
-          translucencyByDistance: undefined,
-          scaleByDistance: undefined
-        }
-      });
+      // Add second label for dates if available
+      const birthYear = figure.dates.birth?.year;
+      const deathYear = figure.dates.death?.year;
+      if (birthYear || deathYear) {
+        const dateText = birthYear ? `${birthYear} - ${deathYear}` : `d. ${deathYear}`;
+        viewer.entities.add({
+          position: Cesium.Cartesian3.fromDegrees(
+            figure.location.longitude,
+            figure.location.latitude,
+            100000 // Match point height
+          ),
+          label: {
+            text: dateText,
+            font: '14px sans-serif',
+            fillColor: Cesium.Color.fromCssColorString('#808080'),
+            style: Cesium.LabelStyle.FILL,
+            verticalOrigin: Cesium.VerticalOrigin.CENTER,
+            horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
+            pixelOffset: new Cesium.Cartesian2(15, 0), // Offset to the right of the point
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          },
+        });
+      }
 
       // Add point
       const pointEntity = entities.add({
         position,
         point: {
           pixelSize: 12,
-          color: figure.type === 'saint' ? Cesium.Color.GOLD : Cesium.Color.GRAY,
-          outlineColor: Cesium.Color.WHITE,
+          color: figure.type === 'saint' ? 
+            Cesium.Color.GOLD.withAlpha(0.3) : 
+            Cesium.Color.GRAY.withAlpha(0.3),
+          outlineColor: Cesium.Color.WHITE.withAlpha(0.5),
           outlineWidth: 2,
           heightReference: Cesium.HeightReference.NONE,
           disableDepthTestDistance: Number.POSITIVE_INFINITY,
@@ -255,8 +263,7 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ figures, connections, onFig
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
       }
 
-      entitiesRef.current.push(nameLabel);
-      entitiesRef.current.push(dateLabel);
+      entitiesRef.current.push(entity);
     });
 
     // Add connections

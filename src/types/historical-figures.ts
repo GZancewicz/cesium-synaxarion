@@ -1,43 +1,42 @@
-export type DateValue = {
+export interface DateValue {
   year: number;
-  isApproximate: boolean;
   range?: {
     start: number;
     end: number;
   };
-};
+  isApproximate?: boolean;
+}
 
-export type Dates = {
+export interface Dates {
   birth?: DateValue;
   death?: DateValue;
-};
+}
 
-export type Location = {
+export interface Location {
   latitude: number;
   longitude: number;
-};
+}
 
 export type FigureType = 'saint' | 'emperor';
 
-export type HistoricalFigure = {
-  id: string;
+export interface HistoricalFigure {
+  id: number;
   name: string;
   type: FigureType;
   dates: Dates;
   location: Location;
-};
+  info: string;
+}
 
-export type ConnectionType = 'lived_under';
+export type ConnectionType = 'lived_under' | 'guided_by';
 
-export type Connection = {
-  id: string;
-  fromId: string;
-  toId: string;
+export interface Connection {
+  fromId: number;
+  toId: number;
   type: ConnectionType;
-  bidirectional: boolean;
-};
+}
 
-export type HistoricalData = {
+export interface HistoricalData {
   figures: HistoricalFigure[];
   connections: Connection[];
-}; 
+} 
