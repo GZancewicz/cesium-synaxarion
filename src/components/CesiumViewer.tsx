@@ -99,26 +99,48 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ figures, connections, onFig
     );
 
     // Set up scene
-    viewer.scene.globe.enableLighting = false;
-    viewer.scene.globe.baseColor = Cesium.Color.WHITE;
-    viewer.scene.backgroundColor = Cesium.Color.WHITE;
-    viewer.scene.skyBox.show = false;
-    viewer.scene.sun = new Cesium.Sun();
-    viewer.scene.moon = new Cesium.Moon();
-    viewer.scene.sun.show = false;
-    viewer.scene.moon.show = false;
-    viewer.scene.globe.show = true;
-    viewer.scene.globe.depthTestAgainstTerrain = true;
-
-    // Set initial camera position centered on Corinth
-    viewer.camera.setView({
-      destination: Cesium.Cartesian3.fromDegrees(22.9, 37.9, 2000000), // Corinth coordinates
-      orientation: {
-        heading: Cesium.Math.toRadians(0),
-        pitch: Cesium.Math.toRadians(-45),
-        roll: 0
+    viewer.scene.globe.enableLighting = true;
+    viewer.scene.globe.baseColor = Cesium.Color.BLACK;
+    viewer.scene.backgroundColor = Cesium.Color.BLACK;
+    viewer.scene.skyBox = new Cesium.SkyBox({
+      sources: {
+        positiveX: '',
+        negativeX: '',
+        positiveY: '',
+        negativeY: '',
+        positiveZ: '',
+        negativeZ: ''
       }
     });
+    viewer.scene.sun = new Cesium.Sun();
+    viewer.scene.moon = new Cesium.Moon();
+    
+    // Hide celestial bodies but keep terrain and imagery
+    viewer.scene.sun.show = false;
+    viewer.scene.moon.show = false;
+    viewer.scene.skyBox.show = false;
+    viewer.scene.globe.show = true;
+
+    // Enable depth testing
+    viewer.scene.globe.depthTestAgainstTerrain = true;
+
+    // Set initial camera position centered on Istanbul
+    const istanbulPosition = Cesium.Cartesian3.fromDegrees(28.9784, 38.5, 800000);
+    viewer.camera.setView({
+      destination: istanbulPosition,
+      orientation: {
+        heading: 0.0,
+        pitch: Cesium.Math.toRadians(-60),
+        roll: 0.0
+      }
+    });
+
+    // Disable automatic camera movements
+    viewer.scene.screenSpaceCameraController.enableInputs = true;
+    viewer.scene.screenSpaceCameraController.enableZoom = true;
+    viewer.scene.screenSpaceCameraController.enableRotate = true;
+    viewer.scene.screenSpaceCameraController.enableTilt = true;
+    viewer.scene.screenSpaceCameraController.enableLook = true;
 
     viewerRef.current = viewer;
 
@@ -300,12 +322,12 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ figures, connections, onFig
       }
     });
 
-    // Zoom to entities with a better view
-    viewer.zoomTo(viewer.entities, new Cesium.HeadingPitchRange(
-      Cesium.Math.toRadians(30),
-      Cesium.Math.toRadians(-45),
-      1000000  // Reduced range
-    ));
+    // Remove the automatic zoom that was overriding our Istanbul center
+    // viewer.zoomTo(viewer.entities, new Cesium.HeadingPitchRange(
+    //   Cesium.Math.toRadians(30),
+    //   Cesium.Math.toRadians(-45),
+    //   1000000  // Reduced range
+    // ));
   }, [figures, connections, onFigureClick]);
 
   return (
