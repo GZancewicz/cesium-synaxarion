@@ -116,6 +116,55 @@
                 "latitude": 39.9334,
                 "longitude": 32.8597
             }
+        },
+        {
+            "id": "8",
+            "name": "St. Gregory of Nazianzus",
+            "type": "saint",
+            "dates": {
+                "birth": {
+                    "year": 329,
+                    "isApproximate": false
+                },
+                "death": {
+                    "year": 374,
+                    "isApproximate": false
+                }
+            },
+            "location": {
+                "latitude": 38.398047,
+                "longitude": 34.349794
+            }
+        },
+        {
+            "id": "9",
+            "name": "St. Emilia",
+            "type": "saint",
+            "dates": {
+                "death": {
+                    "year": 375,
+                    "isApproximate": false
+                }
+            },
+            "location": {
+                "latitude": 38.954295,
+                "longitude": 33.959229
+            }
+        },
+        {
+            "id": "10",
+            "name": "St. Eugendus",
+            "type": "saint",
+            "dates": {
+                "death": {
+                    "year": 510,
+                    "isApproximate": false
+                }
+            },
+            "location": {
+                "latitude": 46.38639,
+                "longitude": 5.86611
+            }
         }
     ],
     "connections": [
