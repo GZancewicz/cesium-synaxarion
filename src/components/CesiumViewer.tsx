@@ -128,13 +128,13 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ figures, connections, onFig
         label: {
           text: figure.type === 'saint' ? `+ ${figure.name}` : figure.name,
           font: '16px sans-serif',
-          style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-          outlineWidth: 2,
+          style: figure.type === 'saint' ? Cesium.LabelStyle.FILL_AND_OUTLINE : Cesium.LabelStyle.FILL,
+          outlineWidth: figure.type === 'saint' ? 2 : 0,
           verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
           pixelOffset: new Cesium.Cartesian2(0, -12),
-          fillColor: Cesium.Color.WHITE,
+          fillColor: figure.type === 'saint' ? Cesium.Color.YELLOW : Cesium.Color.fromCssColorString('#303030'),
           outlineColor: Cesium.Color.BLACK,
-          showBackground: true,
+          showBackground: figure.type === 'saint',
           backgroundColor: new Cesium.Color(0, 0, 0, 0.7),
           distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 10000000),
           disableDepthTestDistance: Number.POSITIVE_INFINITY
