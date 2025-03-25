@@ -173,24 +173,24 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ figures, connections, onFig
         position: Cesium.Cartesian3.fromDegrees(
           figure.location.longitude,
           figure.location.latitude,
-          100000 // Set height for point
+          figure.location.altitude || 100000 // Use altitude if provided, otherwise default to 100000
         ),
         point: {
           pixelSize: 10,
-          color: figure.type === 'saint' ? Cesium.Color.YELLOW : Cesium.Color.WHITE,
+          color: figure.type === 'satellite' ? Cesium.Color.YELLOW : Cesium.Color.WHITE,
         },
         label: {
           text: figure.name,
           font: '14px sans-serif',
-          fillColor: figure.type === 'saint' ? Cesium.Color.YELLOW : Cesium.Color.fromCssColorString('#303030'),
-          style: figure.type === 'saint' ? Cesium.LabelStyle.FILL_AND_OUTLINE : Cesium.LabelStyle.FILL,
-          outlineWidth: figure.type === 'saint' ? 2 : 0,
+          fillColor: figure.type === 'satellite' ? Cesium.Color.YELLOW : Cesium.Color.fromCssColorString('#303030'),
+          style: figure.type === 'satellite' ? Cesium.LabelStyle.FILL_AND_OUTLINE : Cesium.LabelStyle.FILL,
+          outlineWidth: figure.type === 'satellite' ? 2 : 0,
           outlineColor: Cesium.Color.BLACK,
           verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
           pixelOffset: new Cesium.Cartesian2(0, -10),
           disableDepthTestDistance: Number.POSITIVE_INFINITY,
-          showBackground: figure.type === 'saint',
-          backgroundColor: figure.type === 'saint' ? Cesium.Color.BLACK : undefined,
+          showBackground: figure.type === 'satellite',
+          backgroundColor: figure.type === 'satellite' ? Cesium.Color.BLACK : undefined,
         },
         description: `<p>${figure.info}</p>` // Format the info text as HTML
       });
@@ -224,7 +224,7 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ figures, connections, onFig
         position,
         point: {
           pixelSize: 12,
-          color: figure.type === 'saint' ? 
+          color: figure.type === 'satellite' ? 
             Cesium.Color.GOLD.withAlpha(0.3) : 
             Cesium.Color.GRAY.withAlpha(0.3),
           outlineColor: Cesium.Color.WHITE.withAlpha(0.5),
@@ -240,7 +240,7 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ figures, connections, onFig
       const verticalLine = entities.add({
         polyline: {
           positions: Cesium.Cartesian3.fromDegreesArrayHeights([
-            figure.location.longitude, figure.location.latitude, 100000,  // Match point height
+            figure.location.longitude, figure.location.latitude, figure.location.altitude || 100000,  // Use altitude if provided
             figure.location.longitude, figure.location.latitude, 0
           ]),
           width: 2,

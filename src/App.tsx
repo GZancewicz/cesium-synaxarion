@@ -3,7 +3,7 @@ import { Box, Drawer, AppBar, Toolbar, IconButton, Typography, List, ListItem, L
 import MenuIcon from '@mui/icons-material/Menu';
 import CesiumViewer from './components/CesiumViewer';
 import { HistoricalFigure, Connection } from './types/historical-figures';
-import historicalData from './data/historical-figures.json';
+import historicalData from './data/satellites.json';
 
 interface HistoricalData {
   figures: HistoricalFigure[];
@@ -70,7 +70,7 @@ function App() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-            Orthodox Saints and Historical Figures
+            Amateur Radio Satellites
           </Typography>
         </Toolbar>
       </AppBar>

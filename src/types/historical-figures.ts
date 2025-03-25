@@ -15,15 +15,25 @@ export interface Dates {
 export interface Location {
   latitude: number;
   longitude: number;
+  altitude?: number;
 }
 
 export type FigureType = 'saint' | 'emperor';
 
 export interface HistoricalFigure {
-  id: number;
+  id: string;
   name: string;
-  type: FigureType;
-  dates: Dates;
+  type: string;
+  dates: {
+    birth?: {
+      year: number;
+      isApproximate: boolean;
+    };
+    death?: {
+      year: number;
+      isApproximate: boolean;
+    };
+  };
   location: Location;
   info: string;
 }
@@ -31,9 +41,11 @@ export interface HistoricalFigure {
 export type ConnectionType = 'lived_under' | 'guided_by';
 
 export interface Connection {
-  fromId: number;
-  toId: number;
-  type: ConnectionType;
+  id: string;
+  fromId: string;
+  toId: string;
+  type: string;
+  bidirectional: boolean;
 }
 
 export interface HistoricalData {

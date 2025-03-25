@@ -1,0 +1,17 @@
+{
+    "figures": [
+        {
+            "id": "6",
+            "name": "ISS",
+            "type": "satellite",
+            "dates": {},
+            "location": {
+                "latitude": 41.0082,
+                "longitude": 28.9784,
+                "altitude": 408000
+            },
+            "info": "The International Space Station orbits at approximately 408 kilometers (253 miles) above Earth's surface, traveling at about 7.66 kilometers per second"
+        }
+    ],
+    "connections": []
+}
