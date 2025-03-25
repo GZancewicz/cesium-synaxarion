@@ -1,144 +1,59 @@
-import React, { useState } from 'react';
-import { Box, Drawer, AppBar, Toolbar, IconButton, Typography, List, ListItem, ListItemText } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
+import React, { useState, useEffect } from 'react';
+import { Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import CesiumViewer from './components/CesiumViewer';
-import { HistoricalFigure, Connection } from './types/historical-figures';
-import historicalData from './data/satellites.json';
+import { Satellite } from './types/satellites';
+import { getISSPosition } from './services/satellite';
 
-interface HistoricalData {
-  figures: HistoricalFigure[];
-  connections: Connection[];
-}
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
+});
 
-const typedHistoricalData = historicalData as HistoricalData;
+const App: React.FC = () => {
+  const [satellites, setSatellites] = useState<Satellite[]>([]);
 
-const DRAWER_WIDTH = 300;
+  useEffect(() => {
+    // Fetch ISS position once on mount
+    const fetchISSPosition = async () => {
+      try {
+        const issPosition = await getISSPosition();
+        const iss: Satellite = {
+          id: 'iss',
+          name: 'ISS',
+          type: 'iss',
+          location: {
+            latitude: issPosition.latitude,
+            longitude: issPosition.longitude,
+            altitude: issPosition.altitude
+          },
+          info: `Altitude: ${(issPosition.altitude / 1000).toFixed(1)} km\nVelocity: ${Math.round(issPosition.velocity)} km/h\nLat: ${issPosition.latitude.toFixed(2)}°\nLon: ${issPosition.longitude.toFixed(2)}°`
+        };
+        setSatellites([iss]);
+      } catch (error) {
+        console.error('Failed to fetch ISS position:', error);
+      }
+    };
 
-function App() {
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedFigure, setSelectedFigure] = useState<HistoricalFigure | null>(null);
+    fetchISSPosition();
+  }, []);
 
-  const toggleDrawer = () => {
-    setDrawerOpen(!drawerOpen);
-  };
-
-  const handleFigureClick = (figure: HistoricalFigure) => {
-    setSelectedFigure(figure);
-  };
-
-  const formatDates = (figure: HistoricalFigure): string => {
-    const birth = figure.dates.birth;
-    const death = figure.dates.death;
-    
-    if (birth && death) {
-      const birthText = birth.isApproximate ? `ca. ${birth.year}` : birth.year;
-      const deathText = death.isApproximate ? `ca. ${death.year}` : death.year;
-      return `${birthText} - ${deathText}`;
-    }
-    if (birth) {
-      return `b. ${birth.isApproximate ? 'ca. ' : ''}${birth.year}`;
-    }
-    if (death) {
-      return `d. ${death.isApproximate ? 'ca. ' : ''}${death.year}`;
-    }
-    return '';
+  const handleSatelliteClick = (satellite: Satellite) => {
+    console.log('Satellite clicked:', satellite);
+    // TODO: Implement satellite selection behavior
   };
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      <AppBar 
-        position="fixed" 
-        sx={{ 
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-          width: `calc(100% - ${drawerOpen ? DRAWER_WIDTH : 0}px)`,
-          marginLeft: drawerOpen ? `${DRAWER_WIDTH}px` : 0,
-          transition: (theme) =>
-            theme.transitions.create(['width', 'margin'], {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.leavingScreen,
-            }),
-        }}
-      >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={toggleDrawer}
-            sx={{ mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            Amateur Radio Satellites
-          </Typography>
-        </Toolbar>
-      </AppBar>
-
-      <Drawer
-        sx={{
-          width: DRAWER_WIDTH,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: DRAWER_WIDTH,
-            boxSizing: 'border-box',
-          },
-        }}
-        variant="persistent"
-        anchor="left"
-        open={drawerOpen}
-      >
-        <Toolbar /> {/* Add space for AppBar */}
-        <Box sx={{ overflow: 'auto' }}>
-          <List>
-            {typedHistoricalData.figures.map((figure) => (
-              <ListItem 
-                key={figure.id}
-                button
-                selected={selectedFigure?.id === figure.id}
-                onClick={() => handleFigureClick(figure)}
-              >
-                <ListItemText
-                  primary={figure.name}
-                  secondary={formatDates(figure)}
-                  sx={{
-                    '& .MuiListItemText-primary': {
-                      color: figure.type === 'saint' ? '#ffd700' : 'inherit',
-                      fontWeight: figure.type === 'saint' ? 'bold' : 'normal'
-                    }
-                  }}
-                />
-              </ListItem>
-            ))}
-          </List>
-        </Box>
-      </Drawer>
-
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: 0,
-          width: `calc(100% - ${drawerOpen ? DRAWER_WIDTH : 0}px)`,
-          marginLeft: drawerOpen ? 0 : `-${DRAWER_WIDTH}px`,
-          transition: (theme) =>
-            theme.transitions.create(['width', 'margin'], {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.leavingScreen,
-            }),
-          height: '100vh',
-          position: 'relative'
-        }}
-      >
-        <Toolbar /> {/* Add space for AppBar */}
-        <CesiumViewer 
-          figures={typedHistoricalData.figures} 
-          connections={typedHistoricalData.connections}
-          onFigureClick={handleFigureClick} 
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      <Box sx={{ width: '100vw', height: '100vh', position: 'relative' }}>
+        <CesiumViewer
+          satellites={satellites}
+          onSatelliteClick={handleSatelliteClick}
         />
       </Box>
-    </Box>
+    </ThemeProvider>
   );
-}
+};
 
 export default App; 
